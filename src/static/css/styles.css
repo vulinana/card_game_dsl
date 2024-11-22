@@ -1,0 +1,141 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.main-container {
+    display: flex;
+    width: 100%
+    height: 100%;
+}
+
+.sidebar {
+    width: 20%;
+    height 100%;
+    background-color: brown;
+    display:flex;
+    flex-direction:column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.game-list {
+    display: flex;
+    flex-direction: column;
+    width:100%;
+}
+
+.game-button {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    background-color: #F5F5DC;
+    color: brown;
+    border: 1px solid black;
+    cursor: pointer;
+    text-align: center;
+}
+
+.logout-btn {
+    background-color: #F5F5DC;
+    color: brown;
+    cursor: pointer;
+    margin-bottom: 50px;
+}
+
+.game-button:hover {
+    background-color: #45a049;
+}
+
+.game-button.active {
+    background-color: #45a049;
+}
+
+.playground-and-toolbar {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    height: 100%;
+}
+
+.playground {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 95vh;
+}
+
+.toolbar {
+    width: 100%;
+    height: 5vh;
+    background-color: #F5F5DC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.player-buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 95vh;
+}
+
+.player-button {
+    background-color: #F5F5DC;
+    color: brown;
+    margin-top: 5px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.table-cards {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.card-image {
+    width: 70px;
+    height: 110px;
+    margin: 0 10px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.card-image.selected {
+    border: 2px solid black;
+    border-radius: 5px;
+}
+
+.card-image.selected-player-card {
+    border: 2px solid black;
+    border-radius: 5px;
+}
+
+.player-frame {
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+.name-label {
+    color: brown;
+    fontFamily: Arial;
+    fontSize: 12px;
+}
+
+.finish-move-btn {
+    background-color: green;
+    color: white;
+    cursor: pointer;
+}

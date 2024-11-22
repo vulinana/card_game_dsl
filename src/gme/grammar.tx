@@ -1,0 +1,65 @@
+CardGame:
+    'game' name=ID '{'
+        rules=Rules
+        'players' '{' players+=Player[','] '}'
+        ('rounds' '{' rounds+=Round[','] '}')?
+        ('cards' '{' cards+=CardCount[','] '}')?
+    '}'
+;
+
+Rules:
+    'rules' '{'
+        'number_of_players' ':' number_of_players=INT
+        'number_of_rounds' ':' number_of_rounds=INT
+        'number_of_cards_per_round' ':' number_of_cards_per_round=INT
+        'number_of_table_cards' ':' number_of_table_cards=INT
+        actions+=Action[',']?
+    '}'
+;
+
+Action:
+    'action' action_type=ActionType ('if' condition=Condition)?
+;
+
+ActionType:
+    'pick_up_cards' | 'other_action' // možeš dodati više akcija ovde
+;
+
+Condition:
+    'sum_greater_than' value=INT
+;
+
+Player:
+    number=INT
+;
+
+Round:
+    'round' name=INT '{'
+        player_hands+=PlayerHand[',']*
+        ('table_cards' '{' table_cards+=Card[','] '}')?
+        //actions+=Action[','] // dodajemo akcije koje igrači mogu izabrati
+    '}'
+;
+
+
+PlayerHand:
+    player=Player '{'
+        'hand' '{' hand_cards+=Card[','] '}'
+    '}'
+;
+
+CardCount:
+    'card {' card=Card ',' count=INT '}'
+;
+
+Card:
+    rank=Rank 'of' suit=Suit
+;
+
+Rank:
+    '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '12' | '13' | '14' | 'A'
+;
+
+Suit:
+    'hearts' | 'diamonds' | 'clubs' | 'spades'
+;

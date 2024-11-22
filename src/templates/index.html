@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="main-container">
+        <div class="sidebar">
+            <div id="game-list" class="game-list"></div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+        <div class="playground-and-toolbar">
+            <div class="playground" id="playground">
+
+            </div>
+            <div class="toolbar">
+                <button class="finish-move-btn">Finish move</button>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
