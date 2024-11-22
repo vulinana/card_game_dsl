@@ -19,5 +19,6 @@ if __name__ == "__main__":
     from .gme.routes import gme_routes
     app.register_blueprint(gme_routes)
 
+
     CORS(app)
     socketio.run(app, allow_unsafe_werkzeug=True)
