@@ -1,7 +1,23 @@
-from src import create_app
-from src.extensions import socketio
+from flask import Flask
 
-app = create_app()
+from src.extensions import socketio, db, migrate
+from src.config import Config
+from flask_cors import CORS
 
 if __name__ == "__main__":
-    socketio.run(app)
+    app = Flask(__name__)
+    app.config.from_object(Config)
+
+    socketio.init_app(app)
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+    with app.app_context():
+        from .models import User
+        db.create_all()
+
+    from .gme.routes import gme_routes
+    app.register_blueprint(gme_routes)
+
+    CORS(app)
+    socketio.run(app, allow_unsafe_werkzeug=True)
