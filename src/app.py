@@ -19,6 +19,6 @@ app.register_blueprint(gme_routes)
 
 CORS(app)
 
-if __name__ == "__main__":
+if __name__ == "__app__":
     print("Flask app instance created:", app)
     socketio.run(app, allow_unsafe_werkzeug=True)
