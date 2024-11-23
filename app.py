@@ -11,10 +11,10 @@ db.init_app(app)
 migrate.init_app(app, db)
 
 with app.app_context():
-    from .models import User
+    from src.models import User
     db.create_all()
 
-from .gme.routes import gme_routes
+from src.gme.routes import gme_routes
 app.register_blueprint(gme_routes)
 
 CORS(app)
