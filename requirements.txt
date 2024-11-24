@@ -8,6 +8,8 @@ charset-normalizer==3.3.2
 click==8.1.7
 colorama==0.4.6
 dataclasses==0.6
+dnspython==2.7.0
+eventlet==0.38.0
 Flask==3.0.3
 Flask-Cors==5.0.0
 Flask-Migrate==4.0.7
