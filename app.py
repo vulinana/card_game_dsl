@@ -21,5 +21,5 @@ CORS(app)
 
 if __name__ == "__main__":
     print("Flask app instance created:", app)
-    port = int(os.getenv('PORT', 5000))  
+    port = os.environ.get('PORT', 5000)
     socketio.run(app, host='0.0.0.0', port=port)
