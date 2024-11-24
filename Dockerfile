@@ -26,4 +26,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 
 # Pokretanje aplikacije koristeći eventlet kao radni režim
-CMD ["gunicorn", "-k", "eventlet", "--worker-connections", "1000", "app:app"]
+CMD ["gunicorn", "-k", "eventlet", "app:app", "--bind", "0.0.0.0:$PORT"]

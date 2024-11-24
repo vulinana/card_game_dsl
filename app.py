@@ -3,6 +3,7 @@ from extensions import socketio, db, migrate
 from config import Config
 from flask_cors import CORS
 from gme.routes import gme_routes
+import os
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -20,4 +21,5 @@ CORS(app)
 
 if __name__ == "__main__":
     print("Flask app instance created:", app)
-    socketio.run(app, allow_unsafe_werkzeug=True)
+    port = int(os.getenv('PORT', 5000))  
+    socketio.run(app, host='0.0.0.0', port=port)
