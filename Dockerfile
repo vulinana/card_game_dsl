@@ -22,9 +22,6 @@ COPY requirements.txt /app
 # Instalacija zavisnosti
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Instalacija eventlet-a (ako već nije u requirements.txt)
-RUN pip install eventlet
-
 # Kopiranje ostatka aplikacije
 COPY . /app
 
