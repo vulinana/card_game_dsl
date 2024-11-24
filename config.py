@@ -1,7 +1,6 @@
 import os
 
 class Config:
-    # Konektovanje sa PostgreSQL bazom koristeći Railway URL
     SQLALCHEMY_DATABASE_URI = (
         'postgresql://postgres:myhNAiNTJAltMmxjBOFatbshqNSChyyI@autorack.proxy.rlwy.net:23481/railway'
     )

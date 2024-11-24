@@ -1,4 +1,8 @@
 const form = document.getElementById('loginForm');
+const apiUrl = window.location.hostname === 'localhost'
+    ? 'http://127.0.0.1:5000/'
+    : 'https://web-production-84691.up.railway.app/';
+
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
@@ -6,7 +10,7 @@ form.addEventListener('submit', async (event) => {
     const password = document.getElementById('password').value;
 
     try {
-        const response = await fetch('http://127.0.0.1:5000/login', {
+        const response = await fetch(apiUrl + 'login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
