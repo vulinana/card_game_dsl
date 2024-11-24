@@ -1,12 +1,12 @@
+import eventlet
+eventlet.monkey_patch()
+
 from flask import Flask
 from extensions import socketio, db, migrate
 from config import Config
 from flask_cors import CORS
 from gme.routes import gme_routes
 import os
-import eventlet
-
-eventlet.monkey_patch()
 
 app = Flask(__name__)
 app.config.from_object(Config)
