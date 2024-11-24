@@ -1,5 +1,8 @@
-const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-const socket = io.connect(protocol + '//' + document.domain + ':' + location.port);
+const apiUrl = window.location.hostname === 'localhost'
+    ? 'http://127.0.0.1:5000'
+    : 'https://web-production-84691.up.railway.app';
+const socket = io.connect(apiUrl);
+//const socket = io.connect(protocol + '//' + document.domain + ':' + location.port);
 
 window.addEventListener('beforeunload', function (event) {
   event.preventDefault()
