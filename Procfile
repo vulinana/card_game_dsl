@@ -1,1 +1,1 @@
-web: gunicorn -k gevent app:app --bind 0.0.0.0:8080
+web: gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker app:app --bind 0.0.0.0:8080
