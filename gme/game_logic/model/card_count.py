@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict
 
-from src.gme.game_logic.model.card import Card
+from gme.game_logic.model.card import Card
 
 
 @dataclass

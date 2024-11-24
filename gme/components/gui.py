@@ -1,12 +1,11 @@
 import tkinter as tk
 import copy
-from functools import partial
 
-from src.gme.components.interface import Interface
-from src.gme.game_logic.model.card_game import CardGame
+from gme.components.interface import Interface
+from gme.game_logic.model.card_game import CardGame
 from PIL import Image, ImageTk
-from src.gme.game_logic.game import Game
-from src.gme.game_logic.model.card import Card
+from gme.game_logic.game import Game
+from gme.game_logic.model.card import Card
 
 
 class TkinterGui(Interface):

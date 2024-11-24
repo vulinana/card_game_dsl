@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, jsonify
 from flask_socketio import emit
-from src.gme.game_logic.model.card import Card
-from src.gme.game_logic.game import Game
-from src.gme.utils import generate_token, load_games_shared, decode_token, random_cards
-from src.extensions import socketio
-from src.models import User
+from gme.game_logic.model.card import Card
+from gme.game_logic.game import Game
+from gme.utils import load_games_shared, random_cards
+from extensions import socketio
+from models import User
 
 gme_routes = Blueprint('gme', __name__, static_folder='static', template_folder='templates')
 

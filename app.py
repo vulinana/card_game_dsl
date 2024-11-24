@@ -1,7 +1,8 @@
 from flask import Flask
-from src.extensions import socketio, db, migrate
-from src.config import Config
+from extensions import socketio, db, migrate
+from config import Config
 from flask_cors import CORS
+from gme.routes import gme_routes
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -11,10 +12,8 @@ db.init_app(app)
 migrate.init_app(app, db)
 
 with app.app_context():
-    from src.models import User
     db.create_all()
 
-from src.gme.routes import gme_routes
 app.register_blueprint(gme_routes)
 
 CORS(app)
