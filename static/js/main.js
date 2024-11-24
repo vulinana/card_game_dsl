@@ -1,4 +1,5 @@
-const socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const socket = io.connect(protocol + '//' + document.domain + ':' + location.port);
 
 window.addEventListener('beforeunload', function (event) {
   event.preventDefault()
