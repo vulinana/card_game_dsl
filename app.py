@@ -7,7 +7,7 @@ from gme.routes import gme_routes
 app = Flask(__name__)
 app.config.from_object(Config)
 
-socketio.init_app(app, async_mode='eventlet')
+socketio.init_app(app, async_mode='eventlet', cors_allowed_origins="*")
 db.init_app(app)
 migrate.init_app(app, db)
 
