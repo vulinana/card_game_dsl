@@ -11,7 +11,7 @@ window.addEventListener('beforeunload', function (event) {
 var selected_player_card = null;
 var selected_table_cards = [];
 var selected_game = null;
-var player_points = 0
+var game_id = null
 
 document.addEventListener('DOMContentLoaded', () => {
     socket.on('connect', () => {
@@ -47,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('logged_users_loaded', data => {
         const playground = document.getElementById('playground');
         playground.innerHTML = '';
-        console.log(data.game)
 
         const player_buttons = document.createElement('div');
         const title = document.createElement('span')
@@ -62,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
             button.textContent = user;
             button.className = 'player-button';
             button.onclick = () => {
-                console.log("player_picked")
                 socket.emit('player_picked', user, selected_game)
             };
             player_buttons.appendChild(button);
@@ -84,13 +82,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
      socket.on('loaded_game_by_name', (data) => {
-        console.log("loaded_game_by_name ", data)
-        displayPlayerCards(data.player_cards, 'top', data.rival)
+        const playground = document.getElementById('playground');
+        playground.innerHTML = ''
+
+        game_id = data.game_id
+        displayRivalCards(data.rival_cards_count, data.rival, data.rival_points)
         displayTableCards(data.table_cards)
-        displayPlayerCards(data.player_cards, 'bottom', "You")
+        displayPlayerCards(data.player_cards, data.player_points)
     });
 
-    function displayTableCards(cards) {
+     function displayTableCards(cards) {
         const playground = document.getElementById('playground');
 
         const playerButtons = document.querySelector('.player-buttons');
@@ -103,76 +104,127 @@ document.addEventListener('DOMContentLoaded', () => {
         tableCardsContainer.className = 'table-cards';
 
         cards.forEach(card => {
-            console.log(card)
             const cardElement = document.createElement('img');
             cardElement.src = `static/imgs/${card.rank}_of_${card.suit}.png`;
             cardElement.alt = `${card.rank} of ${card.suit}`;
             cardElement.className = 'card-image';
-            cardElement.style.cursor = 'pointer';
-            cardElement.onclick = () => {
-                if (cardElement.classList.contains('selected')) {
-                    removeTableCard(card)
-                    cardElement.classList.remove('selected');
-                }
-                else {
-                    selected_table_cards.push(card)
-                    cardElement.classList.add('selected');
-                }
-            };
+            cardElement.style.cursor = 'not-allowed';
+            cardElement.dataset.rank = card.rank;
+            cardElement.dataset.suit = card.suit;
 
             tableCardsContainer.appendChild(cardElement);
         });
 
         playground.appendChild(tableCardsContainer);
-    }
+
+        socket.emit('is_player_turn', game_id);
+        socket.on('player_turn_status', (data) => {
+            const isTurn = data.is_turn;
+            const cardElements = document.querySelectorAll('.card-image');
+
+            cardElements.forEach(card => {
+                if (isTurn) {
+                    card.style.cursor = 'pointer';
+                    card.onclick = () => {
+                        const rank = card.dataset.rank
+                        const suit = card.dataset.suit
+                        if (card.classList.contains('selected')) {
+                            removeTableCard({'rank': rank, 'suit': suit})
+                            card.classList.remove('selected');
+                        }
+                        else {
+                            selected_table_cards.push({'rank': rank, 'suit': suit})
+                            card.classList.add('selected');
+                        }
+                    };
+                } else {
+                    card.style.cursor = 'not-allowed';
+                    card.onclick = null;
+                }
+            });
+        });
 
 
-    function displayPlayerCards(cards, position = 'top', player) {
+     }
+
+     function displayRivalCards(numberOfCards, player, points) {
         const playground = document.getElementById('playground');
 
         const playerFrame = document.createElement('div');
         playerFrame.classList.add('player-frame');
 
         const nameLabel = document.createElement('span');
-        nameLabel.textContent = `${player}: ${0}`;
-        nameLabel.className = 'name-label'
+        nameLabel.textContent = `${player}: ${points}`;
+        nameLabel.className = 'name-label';
 
         const cardsFrame = document.createElement('div');
-        cardsFrame.className = 'cards-frame'
+        cardsFrame.className = 'cards-frame';
+
+        for (let i = 0; i < numberOfCards; i++) {
+            const cardElement = document.createElement('img');
+            cardElement.className = 'card-image';
+            cardElement.src = '/static/imgs/card_background.png';
+
+            cardsFrame.appendChild(cardElement);
+        }
+
+        playerFrame.appendChild(nameLabel);
+        playerFrame.appendChild(cardsFrame);
+        playground.appendChild(playerFrame);
+    }
+
+    function displayPlayerCards(cards, points, gameId) {
+        const playground = document.getElementById('playground');
+
+        const playerFrame = document.createElement('div');
+        playerFrame.classList.add('player-frame');
+
+        const nameLabel = document.createElement('span');
+        nameLabel.textContent = `You: ${points}`;
+        nameLabel.className = 'name-label';
+
+        const cardsFrame = document.createElement('div');
+        cardsFrame.className = 'cards-frame';
 
         cards.forEach(card => {
             const cardElement = document.createElement('img');
-            cardElement.className = 'card-image';
+            cardElement.className = 'player-card-image';
+            cardElement.src = `/static/imgs/${card.rank}_of_${card.suit}.png`;
+            cardElement.style.cursor = 'not-allowed';
+            cardElement.dataset.rank = card.rank;
+            cardElement.dataset.suit = card.suit;
 
-            if (position === 'bottom') {
-                cardElement.src = `/static/imgs/${card.rank}_of_${card.suit}.png`;
-                cardElement.style.cursor = 'pointer';
-            } else {
-                cardElement.src = '/static/imgs/card_background.png';
-            }
-
-            if (position === 'bottom') {
-                cardElement.onclick = () => {
-                    selected_player_card = card
-
-                    const selectedCards = document.querySelectorAll('.card-image.selected-player-card');
-                    selectedCards.forEach(el => el.classList.remove('selected-player-card'));
-
-                    cardElement.classList.toggle('selected-player-card');
-                };
-            }
             cardsFrame.appendChild(cardElement);
         });
 
-        if (position === 'top') {
-            playerFrame.appendChild(nameLabel);
-            playerFrame.appendChild(cardsFrame)
-        } else {
-            playerFrame.appendChild(cardsFrame)
-            playerFrame.appendChild(nameLabel);
-        }
-
+        playerFrame.appendChild(cardsFrame);
+        playerFrame.appendChild(nameLabel);
         playground.appendChild(playerFrame);
+
+        socket.emit('is_player_turn', game_id);
+        socket.on('player_turn_status', (data) => {
+            const isTurn = data.is_turn;
+            const cardElements = document.querySelectorAll('.player-card-image');
+
+            cardElements.forEach(card => {
+                if (isTurn) {
+                    card.style.cursor = 'pointer';
+                    card.onclick = () => {
+                        const rank = card.dataset.rank;
+                        const suit = card.dataset.suit;
+                        selected_player_card = {'rank': rank, 'suit': suit};
+
+                        const selectedCards = document.querySelectorAll('.player-card-image.selected-player-card');
+                        selectedCards.forEach(el => el.classList.remove('selected-player-card'));
+
+                        card.classList.toggle('selected-player-card');
+                    };
+                } else {
+                    card.style.cursor = 'not-allowed';
+                    card.onclick = null;
+                }
+            });
+        });
     }
 
     function removeTableCard(card) {
@@ -184,6 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+
 function logout() {
     socket.emit('logout')
 
@@ -193,7 +246,7 @@ function logout() {
 }
 
  function finishMove() {
-    const totalTableValue = selected_table_cards.reduce((sum, card) => sum + parseInt(card.rank, 10), 0);
+    /*const totalTableValue = selected_table_cards.reduce((sum, card) => sum + parseInt(card.rank, 10), 0);
     const rankValue = parseInt(selected_player_card.rank, 10);
     if (!isNaN(rankValue) && rankValue === totalTableValue) {
         player_points += check_card_points(selected_player_card)
@@ -201,9 +254,8 @@ function logout() {
              player_points += check_card_points(card)
         });
 
-        console.log(player_points)
-      //socket.emit('finish_move')
-    }
+        console.log(player_points)*/
+      socket.emit('finish_move', game_id, selected_table_cards, selected_player_card)
  }
 
   function check_card_points(card) {

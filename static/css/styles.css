@@ -120,6 +120,24 @@ html, body {
     border-radius: 5px;
 }
 
+.player-card-image {
+    width: 70px;
+    height: 110px;
+    margin: 0 10px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.player-card-image.selected {
+    border: 2px solid black;
+    border-radius: 5px;
+}
+
+.player-card-image.selected-player-card {
+    border: 2px solid black;
+    border-radius: 5px;
+}
+
 .player-frame {
     min-height: 100px;
     display: flex;

@@ -19,9 +19,11 @@ class GameDB(db.Model):
     __tablename__ = 'games'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
+    current_player_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=False)
 
     user_games = db.relationship('UserGame', back_populates='game', cascade="all, delete-orphan")
     game_cards = db.relationship('GameCard', back_populates='game', cascade="all, delete-orphan")
+    current_player = db.relationship('User')
 
     def __repr__(self):
         return f'<Game {self.name}>'
@@ -36,8 +38,12 @@ class CardDB(db.Model):
 
     game_cards = db.relationship('GameCard', back_populates='card', cascade="all, delete-orphan")
 
-    def __repr__(self):
-        return f'<Card {self.rank} {self.suit}>'
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'rank': self.rank,
+            'suit': self.suit
+    }
 
 
 # Veza između igre i korisnika (M:N)
@@ -73,7 +79,6 @@ class GameCard(db.Model):
         return f'<GameCard game_id={self.game_id} card_id={self.card_id}>'
 
 
-# Veza između korisnika, igre i karata
 class UserGameCard(db.Model):
     __tablename__ = 'user_game_cards'
     id = db.Column(db.Integer, primary_key=True)  # Jedinstveni ID za svaki zapis
