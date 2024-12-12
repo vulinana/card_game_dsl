@@ -5,6 +5,7 @@ from flask import current_app
 from textx import metamodel_from_file
 from .game_logic.model.card_game import CardGame
 import random
+from itertools import combinations
 
 
 def module_path(relative_path):
@@ -60,9 +61,41 @@ def random_cards(card_count_list, number):
         if not available_cards:
             break
 
+        available_cards = [card for card in card_count_list if card.count > 0]
         selected_card = random.choice(available_cards)
         selected_cards.append(selected_card.card)
         selected_card.count -= 1
         number -= 1
 
     return selected_cards, card_count_list
+
+
+def validate_points(selected_table_cards, selected_player_card):
+    target_value = int(selected_player_card['rank'])
+
+    valid_combinations = []
+    for i in range(1, len(selected_table_cards) + 1):
+        for combo in combinations(selected_table_cards, i):
+            if sum(int(card['rank']) for card in combo) == target_value:
+                valid_combinations.append(combo)
+
+    if not valid_combinations:
+        return 0
+
+    # Računanje poena za sve validne kombinacije
+    points = 0
+    points += check_card_points(selected_player_card)
+    for combo in valid_combinations:
+        for card in combo:
+            points += check_card_points(card)
+
+    return points
+
+def check_card_points(card):
+    if card['rank'] == '10' and card['suit'] == 'diamonds':
+        return 2
+    if card['rank'] in {'10', 'A', '12', '13', '14'} or (
+            card['rank'] == '2' and card['suit'] == 'clubs'):
+        return 1
+
+    return 0

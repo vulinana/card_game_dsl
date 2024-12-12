@@ -1,4 +1,4 @@
-python -m src.gme.main
+python -m app
 
 
 --zbog importa neki problem

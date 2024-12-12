@@ -20,9 +20,13 @@ class GameDB(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     current_player_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=False)
+    current_round = db.Column(db.Integer)
+    number_of_rounds = db.Column(db.Integer)
+    number_of_cards_per_round = db.Column(db.Integer)
 
     user_games = db.relationship('UserGame', back_populates='game', cascade="all, delete-orphan")
     game_cards = db.relationship('GameCard', back_populates='game', cascade="all, delete-orphan")
+    pending_cards = db.relationship('PendingCard', back_populates='game', cascade="all, delete-orphan")
     current_player = db.relationship('User')
 
     def __repr__(self):
@@ -51,6 +55,7 @@ class UserGame(db.Model):
     __tablename__ = 'users_games'
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
     game_id = db.Column(db.Integer, db.ForeignKey('games.id', ondelete='CASCADE'), primary_key=True)
+    points = db.Column(db.Integer)
 
     user = db.relationship('User', back_populates='user_games')
     game = db.relationship('GameDB', back_populates='user_games')
@@ -100,3 +105,16 @@ class UserGameCard(db.Model):
 
     def __repr__(self):
         return f'<UserGameCard user_id={self.user_id} game_id={self.game_id} card_id={self.card_id}>'
+
+class PendingCard(db.Model):
+    __tablename__ = 'pending_cards'
+    id = db.Column(db.Integer, primary_key=True)  # Jedinstveni ID za svaki zapis
+    game_id = db.Column(db.Integer, db.ForeignKey('games.id', ondelete='CASCADE'), nullable=False)
+    card_id = db.Column(db.Integer, db.ForeignKey('cards.id', ondelete='CASCADE'), nullable=False)
+    count = db.Column(db.Integer, nullable=False)
+
+    game = db.relationship('GameDB', back_populates='pending_cards')
+    card = db.relationship('CardDB')
+
+    def __repr__(self):
+        return f'<PendingCard game_id={self.game_id} card_id={self.card_id}>'

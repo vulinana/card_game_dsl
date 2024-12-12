@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify
 from flask_socketio import emit
-from gme.game_logic.game import Game
 from gme.services.game_service import GameService
 from gme.utils import load_games_shared
 from extensions import socketio
@@ -8,7 +7,6 @@ from extensions import socketio
 gme_routes = Blueprint('gme', __name__, static_folder='static', template_folder='templates')
 
 card_games = []
-game_instance = Game()
 connected_users = {}
 games = {}
 
@@ -117,17 +115,25 @@ def decline_invitation(rival_email, game_name):
 @socketio.on('finish_move')
 def finish_move(game_id, selected_table_cards, selected_player_card):
     player_email = get_connected_user_email(request.sid)
-    table_cards, player1_cards, player2_cards, player2_email = GameService.finish_move(game_id, selected_table_cards, selected_player_card, player_email)
-    player2_sid = get_connected_user_sid(player2_email)
+    table_cards, player1_cards, player2_cards, player1, player2, game_players, winner = GameService.finish_move(game_id, selected_table_cards, selected_player_card, player_email)
+    player2_sid = get_connected_user_sid(player2.user.email)
+
+    if winner is not None:
+        winner_sid = get_connected_user_sid(winner.user.email)
+        emit('game_over', {'message': 'You won!'}, to=winner_sid)
+        losers = [p for p in game_players if p.user.email != winner.user.email]
+        for loser in losers:
+            loser_sid = get_connected_user_sid(loser.user.email)
+            emit('game_over', {'message': 'You are loser :('}, to=loser_sid)
 
     emit('loaded_game_by_name',
-         {'rival': player2_email,
+         {'rival': player2.user.email,
           'player_cards': [card.to_dict() for card in player1_cards],
           'table_cards': [card.to_dict() for card in table_cards],
           'game_id': game_id,
           'rival_cards_count': len(player2_cards),
-          'player_points': 0,
-          'rival_points': 0},
+          'player_points': player1.points,
+          'rival_points': player2.points},
          to=request.sid)
 
     emit('loaded_game_by_name',
@@ -136,8 +142,8 @@ def finish_move(game_id, selected_table_cards, selected_player_card):
           'table_cards': [card.to_dict() for card in table_cards],
           'game_id': game_id,
           'rival_cards_count': len(player1_cards),
-          'player_points': 0,
-          'rival_points': 0},
+          'player_points': player2.points,
+          'rival_points': player1.points},
          to=player2_sid)
 @socketio.on('is_player_turn')
 def is_player_turn(game_id):

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import joinedload
 
-from models import CardDB, UserGameCard, User, GameCard, GameDB, UserGame
+from models import CardDB, UserGameCard, User, GameCard, GameDB, UserGame, PendingCard
 from extensions import db
 
 
@@ -52,6 +52,12 @@ class GameRepository:
         db.session.commit()
 
     @staticmethod
+    def delete_table_card(game_id, card_id):
+        table_card_from_db = GameCard.query.filter_by(game_id=game_id, card_id=card_id).first()
+        db.session.delete(table_card_from_db)
+        db.session.commit()
+
+    @staticmethod
     def create_player_card(game_id, user_id, card_id):
         new_player_card = UserGameCard(user_id=user_id, game_id=game_id, card_id=card_id)
         db.session.add(new_player_card)
@@ -65,8 +71,12 @@ class GameRepository:
         db.session.commit()
 
     @staticmethod
-    def create_game(name, current_player_id):
-        new_game = GameDB(name=name, current_player_id=current_player_id)
+    def create_game(name, current_player_id, number_of_rounds, number_of_cards_per_round):
+        new_game = GameDB(name=name,
+                          current_player_id=current_player_id,
+                          current_round=1,
+                          number_of_rounds=number_of_rounds,
+                          number_of_cards_per_round=number_of_cards_per_round)
         db.session.add(new_game)
         db.session.commit()
         return new_game
@@ -82,7 +92,7 @@ class GameRepository:
 
     @staticmethod
     def create_game_player(game_id, user_id):
-        new_user_game = UserGame(user_id=user_id, game_id=game_id)
+        new_user_game = UserGame(user_id=user_id, game_id=game_id, points=0)
         db.session.add(new_user_game)
         db.session.commit()
         return new_user_game
@@ -90,14 +100,52 @@ class GameRepository:
     @staticmethod
     def get_game_players(game_id):
         return (
-            db.session.query(User)
-            .join(UserGame, UserGame.user_id == User.id)
-            .filter(UserGame.game_id == game_id)
+            db.session.query(UserGame).filter_by(game_id=game_id)
+            .options(joinedload(UserGame.user))
             .all()
         )
+
+    @staticmethod
+    def get_game_player(game_id, user_id):
+        return UserGame.query.filter_by(game_id=game_id, user_id=user_id).first()
 
     @staticmethod
     def update_current_player(game_id, new_current_player_id):
         game = GameDB.query.filter_by(id=game_id).first()
         game.current_player_id = new_current_player_id
+        db.session.commit()
+
+    @staticmethod
+    def create_pending_card(game_id, card_id, count):
+        new_pending_card = PendingCard(game_id=game_id,
+                                 card_id=card_id, count=count)
+        db.session.add(new_pending_card)
+        db.session.commit()
+
+    @staticmethod
+    def get_game_pending_cards(game_id):
+        return (
+            db.session.query(PendingCard)
+            .options(joinedload(PendingCard.card))
+            .filter(PendingCard.game_id == game_id)
+            .all()
+        )
+
+    @staticmethod
+    def remove_pending_card(game_id, card_id):
+        pending_card = PendingCard.query.filter_by(game_id=game_id, card_id=card_id).first()
+        if pending_card.count > 1:
+            pending_card.count = pending_card.count - 1
+        else:
+            db.session.delete(pending_card)
+        db.session.commit()
+
+    @staticmethod
+    def increase_game_round(game_id):
+        game = GameDB.query.filter_by(id=game_id).first()
+        game.current_round = game.current_round + 1
+        db.session.commit()
+
+    @staticmethod
+    def save_changes():
         db.session.commit()

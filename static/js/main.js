@@ -86,6 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
         playground.innerHTML = ''
 
         game_id = data.game_id
+        selected_table_cards = []
+        selected_player_card = null
+
         displayRivalCards(data.rival_cards_count, data.rival, data.rival_points)
         displayTableCards(data.table_cards)
         displayPlayerCards(data.player_cards, data.player_points)
@@ -234,6 +237,25 @@ document.addEventListener('DOMContentLoaded', () => {
             selected_table_cards.splice(index, 1);
         }
     }
+
+    function showNotification(message, duration = 3000) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.classList.add('show');
+
+        setTimeout(() => {
+            notification.classList.remove('show'); // Uklonite klasu za prikaz
+        }, duration);
+    }
+
+    socket.on('game_over', (data) => {
+        showNotification(data.message, 3000);
+
+        setTimeout(() => {
+            socket.emit('load_logged_users')
+        }, 3000);
+    });
+
 });
 
 
@@ -255,6 +277,7 @@ function logout() {
         });
 
         console.log(player_points)*/
+      console.log(selected_table_cards)
       socket.emit('finish_move', game_id, selected_table_cards, selected_player_card)
  }
 

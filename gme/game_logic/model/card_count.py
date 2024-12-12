@@ -14,3 +14,4 @@ class CardCount:
 
     def to_dict(self):
         return asdict(self)
+
