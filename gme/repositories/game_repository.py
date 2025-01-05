@@ -1,6 +1,6 @@
 from sqlalchemy.orm import joinedload
 
-from models import CardDB, UserGameCard, User, GameCard, GameDB, UserGame, PendingCard
+from models import CardDB, UserGameCard, User, GameCard, GameDB, UserGame, PendingCard, GameRequest
 from extensions import db
 
 
@@ -14,6 +14,12 @@ class GameRepository:
     def get_user(email):
         return (
             User.query.filter_by(email=email).first()
+        )
+
+    @staticmethod
+    def get_user_by_id(id):
+        return (
+            User.query.filter_by(id=id).first()
         )
 
     @staticmethod
@@ -71,21 +77,28 @@ class GameRepository:
         db.session.commit()
 
     @staticmethod
-    def create_game(name, current_player_id, number_of_rounds, number_of_cards_per_round):
+    def create_game_init(name, game_initiator):
         new_game = GameDB(name=name,
-                          current_player_id=current_player_id,
-                          current_round=1,
-                          number_of_rounds=number_of_rounds,
-                          number_of_cards_per_round=number_of_cards_per_round)
+                          game_initiator=game_initiator)
         db.session.add(new_game)
         db.session.commit()
         return new_game
 
     @staticmethod
+    def create_game_request(game_id, user_id):
+        new_game_request = GameRequest(user_id=user_id, game_id=game_id)
+        db.session.add(new_game_request)
+        db.session.commit()
+        return new_game_request
+
+    @staticmethod
     def get_game(game_id):
         return (
             db.session.query(GameDB)
-            .options(joinedload(GameDB.current_player))
+            .options(
+                joinedload(GameDB.current_player),
+                joinedload(GameDB.game_requests),
+                joinedload(GameDB.game_initiator))
             .filter(GameDB.id == game_id)
             .first()
         )
@@ -148,4 +161,10 @@ class GameRepository:
 
     @staticmethod
     def save_changes():
+        db.session.commit()
+
+    @staticmethod
+    def update_game_request_status(game_id, user_id, status):
+        game_request = GameRequest.query.filter_by(game_id=game_id, user_id=user_id).first()
+        game_request.status = status
         db.session.commit()

@@ -1,3 +1,5 @@
+from sqlalchemy import Enum
+import enum
 from extensions import db
 
 # Korisnik
@@ -8,6 +10,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
 
+    game_requests = db.relationship('GameRequest', back_populates='user')
     user_games = db.relationship('UserGame', back_populates='user', cascade="all, delete-orphan")
 
     def __repr__(self):
@@ -17,20 +20,44 @@ class User(db.Model):
 # Igra
 class GameDB(db.Model):
     __tablename__ = 'games'
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    current_player_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=False)
+    game_initiator_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    current_player_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     current_round = db.Column(db.Integer)
     number_of_rounds = db.Column(db.Integer)
     number_of_cards_per_round = db.Column(db.Integer)
 
+    # Define relationships
+    game_initiator = db.relationship('User', foreign_keys=[game_initiator_id], backref='initiated_games')
+    current_player = db.relationship('User', foreign_keys=[current_player_id], backref='current_games')
+
+    game_requests = db.relationship('GameRequest', back_populates='game', cascade="all, delete-orphan")
     user_games = db.relationship('UserGame', back_populates='game', cascade="all, delete-orphan")
     game_cards = db.relationship('GameCard', back_populates='game', cascade="all, delete-orphan")
     pending_cards = db.relationship('PendingCard', back_populates='game', cascade="all, delete-orphan")
-    current_player = db.relationship('User')
 
     def __repr__(self):
         return f'<Game {self.name}>'
+
+class GameRequestStatus(enum.Enum):
+    PENDING = "PENDING"
+    ACCEPTED = "ACCEPTED"
+    DECLINED = "DECLINED"
+
+class GameRequest(db.Model):
+    __tablename__ = 'game_requests'
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('games.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    status = db.Column(Enum(GameRequestStatus), default=GameRequestStatus.PENDING, nullable=False)
+
+    game = db.relationship('GameDB', back_populates='game_requests')
+    user = db.relationship('User', back_populates='game_requests')
+
+    def __repr__(self):
+        return f'<GameRequest game_id={self.game_id} user_id={self.user_id} status={self.status}>'
 
 
 # Karta

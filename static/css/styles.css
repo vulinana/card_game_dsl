@@ -62,13 +62,13 @@ html, body {
 }
 
 .playground {
+    position: relative; /* Da bi se kasnije koristi absolute pozicioniranje za decu */
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     height: 95vh;
 }
-
 .toolbar {
     width: 100%;
     height: 5vh;
@@ -78,28 +78,42 @@ html, body {
     justify-content: center;
 }
 
-.player-buttons {
+.playground-buttons {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
+    align-items:center;
     height: 95vh;
+}
+
+.player-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 }
 
 .player-button {
     background-color: #F5F5DC;
+    border: 1px solid brown;
     color: brown;
     margin-top: 5px;
     padding: 10px;
     cursor: pointer;
 }
 
+.player-button.selected {
+    border: 3px solid black;
+}
+
 .table-cards {
+    position: absolute;
+    top: 50%; /* Pozicioniraj na 50% visine playground-a */
+    left: 50%; /* Pozicioniraj na 50% širine playground-a */
+    transform: translate(-50%, -50%); /* Pomeri element kako bi bio tačno u centru */
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
-    margin: 20px 0;
 }
 
 .card-image {

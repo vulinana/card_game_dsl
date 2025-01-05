@@ -9,7 +9,8 @@ CardGame:
 
 Rules:
     'rules' '{'
-        'number_of_players' ':' number_of_players=INT
+        'min_number_of_players' ':' min_number_of_players=INT
+        'max_number_of_players' ':' max_number_of_players=INT
         'number_of_rounds' ':' number_of_rounds=INT
         'number_of_cards_per_round' ':' number_of_cards_per_round=INT
         'number_of_table_cards' ':' number_of_table_cards=INT
