@@ -6,6 +6,15 @@ from textx import metamodel_from_file
 from .game_logic.model.card_game import CardGame
 import random
 from itertools import combinations
+import bcrypt
+
+def hash_password(password):
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
+
+def verify_password(password, hashed_password):
+    return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 
 def module_path(relative_path):
@@ -27,30 +36,6 @@ def load_game_model(file_path):
 def load_games_shared():
     game_files = scan_game_files()
     return [load_game_model(file_path) for file_path in game_files]
-
-def generate_token(user_email):
-    expiration_time = datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token važi 1 sat
-    token = jwt.encode(
-        {'email': user_email, 'exp': expiration_time},
-        current_app.config['SECRET_KEY'],
-        algorithm='HS256'
-    )
-    return token
-
-
-def decode_token(token):
-    try:
-        payload = jwt.decode(
-            token,
-            current_app.config['SECRET_KEY'],
-            algorithms=['HS256']
-        )
-        return payload['email']
-    except jwt.ExpiredSignatureError:
-        return "Token je istekao"
-    except jwt.InvalidTokenError:
-        return "Nevalidan token"
-
 
 
 def random_cards(card_count_list, number):

@@ -26,6 +26,10 @@ def render_login():
 def render_index():
     return render_template('index.html', games=card_games)
 
+@gme_routes.route('/register')
+def render_register():
+    return render_template('register.html', games=card_games)
+
 
 #API routes
 @gme_routes.route('/login', methods=['POST'])
@@ -33,13 +37,21 @@ def login():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
+    message, status = GameService.get_user_by_email_and_password(email, password)
+    return jsonify({'email': email, 'message': message}), status
 
-    user = GameService.get_user_by_email_and_password(email, password)
 
-    if user:
-        return jsonify({'email': user.email, 'message': 'Login successful'}), 200
-    else:
-        return jsonify({'message': 'Invalid email or password'}), 401
+@gme_routes.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+
+    message, status = GameService.create_user(username, email, password)
+
+    return jsonify({'email': email, 'message': message}), status
+
 
 @socketio.on('logout')
 def logout():

@@ -6,16 +6,24 @@ const apiUrl = window.location.hostname === 'localhost'
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
+    const username = document.getElementById('username').value
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
+    const confirm_password = document.getElementById('confirmpassword').value
+
+    if (password != confirm_password)
+    {
+        document.getElementById('message').textContent = "The passwords do not match!";
+        return;
+    }
 
     try {
-        const response = await fetch(apiUrl + 'login', {
+        const response = await fetch(apiUrl + 'register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ username, email, password })
         });
 
         const result = await response.json();
@@ -27,6 +35,6 @@ form.addEventListener('submit', async (event) => {
         }
     } catch (error) {
         console.error('Error:', error);
-        document.getElementById('message').textContent = 'An error occurred during login.';
+        document.getElementById('message').textContent = 'An error occurred during registration.';
     }
 });
