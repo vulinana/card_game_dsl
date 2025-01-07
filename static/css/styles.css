@@ -192,3 +192,9 @@ html, body {
     display: block;
     opacity: 1;
 }
+
+.game-rules-button {
+    background-color:brown;
+    color:white;
+    cursor: pointer;
+}

@@ -185,5 +185,15 @@ def is_player_turn(game_id):
     is_turn = game.current_player.email == player_email
     emit('player_turn_status', {'is_turn': is_turn}, room=request.sid)
 
+@socketio.on('game_rules')
+def get_game_rules(game_name):
+    game = next((game for game in load_games_shared() if game_name == game.name), None)
+    text = f"{game.name}<br><br>"
+    text += game.rules.to_text()
+    text += "<br><br>"
+    for action in game.actions:
+        text += action.to_text()
+    emit('game_rules', {'rules': text}, to=request.sid)
+
 
 

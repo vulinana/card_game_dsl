@@ -319,6 +319,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     });
 
+    socket.on('game_rules', (data) => {
+        showAlert(data.rules)
+    });
+
 });
 
 
@@ -334,6 +338,10 @@ function finishMove() {
     socket.emit('finish_move', game_id, selected_table_cards, selected_player_card)
 }
 
+function gameRules() {
+    socket.emit('game_rules', selected_game.name)
+}
+
 function showModal(message, onAccept, onDecline) {
     const modal = document.getElementById('custom-modal');
     const modalMessage = document.getElementById('modal-message');
@@ -341,7 +349,7 @@ function showModal(message, onAccept, onDecline) {
     const acceptButton = document.getElementById('modal-accept');
     const declineButton = document.getElementById('modal-decline');
 
-    modalMessage.textContent = message;
+    modalMessage.innerHTML = message;
     modal.style.display = 'flex';
 
     closeButton.onclick = () => {
