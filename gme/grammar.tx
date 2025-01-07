@@ -1,9 +1,8 @@
 CardGame:
     'game' name=ID '{'
         rules=Rules
-        'players' '{' players+=Player[','] '}'
-        ('rounds' '{' rounds+=Round[','] '}')?
-        ('cards' '{' cards+=CardCount[','] '}')?
+        'actions' '{' actions+=Action[','] '}'
+        'cards' '{' cards+=CardCount[','] '}'
     '}'
 ;
 
@@ -14,8 +13,22 @@ Rules:
         'number_of_rounds' ':' number_of_rounds=INT
         'number_of_cards_per_round' ':' number_of_cards_per_round=INT
         'number_of_table_cards' ':' number_of_table_cards=INT
-        actions+=Action[',']?
+        'winner_condition' ':' winner_condition=WinnerCondition
+        'new_round_condition' ':' new_round_condition=NewRoundCondition
+        'next_player_in_round_condition' ':' next_player_in_round_condition=NextPlayerCondition
     '}'
+;
+
+WinnerCondition:
+    'highest_score' | 'lowest_score'
+;
+
+NewRoundCondition:
+    'no_cards_left' | 'circle_completed'
+;
+
+NextPlayerCondition:
+    'winner' | 'circle_order'
 ;
 
 Action:
@@ -23,34 +36,19 @@ Action:
 ;
 
 ActionType:
-    'pick_up_cards' | 'other_action' // možeš dodati više akcija ovde
+    'collect_by_rank' | 'follow_by_rank' | 'follow_by_suit' | 'follow_by_rank_or_suit' // dodati akcije prilikom prosirenja
 ;
 
 Condition:
     'sum_greater_than' value=INT
 ;
 
-Player:
-    number=INT
-;
-
-Round:
-    'round' name=INT '{'
-        player_hands+=PlayerHand[',']*
-        ('table_cards' '{' table_cards+=Card[','] '}')?
-        //actions+=Action[','] // dodajemo akcije koje igrači mogu izabrati
-    '}'
-;
-
-
-PlayerHand:
-    player=Player '{'
-        'hand' '{' hand_cards+=Card[','] '}'
-    '}'
-;
-
 CardCount:
-    'card {' card=Card ',' count=INT '}'
+    'card {'
+        'name:' card=Card
+        'score:' score=INT
+        'count:' count=INT
+    '}'
 ;
 
 Card:

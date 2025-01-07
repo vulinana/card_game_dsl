@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Card Game</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modal-styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loader-styles.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
 </head>
 <body>
@@ -22,6 +24,19 @@
                 <button class="finish-move-btn" onclick="finishMove()">Finish move</button>
             </div>
         </div>
+    </div>
+     <div id="custom-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="modal-message"></p>
+            <div class="modal-buttons">
+                <button id="modal-accept">Accept</button>
+                <button id="modal-decline">Decline</button>
+            </div>
+        </div>
+    </div>
+    <div id="loader-overlay" class="loader-overlay">
+        <div class="loader"></div>
     </div>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>

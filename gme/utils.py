@@ -1,9 +1,6 @@
 import os
-import jwt
-import datetime
-from flask import current_app
 from textx import metamodel_from_file
-from .game_logic.model.card_game import CardGame
+from gme.model.card_game import CardGame
 import random
 from itertools import combinations
 import bcrypt
@@ -54,33 +51,30 @@ def random_cards(card_count_list, number):
 
     return selected_cards, card_count_list
 
-
-def validate_points(selected_table_cards, selected_player_card):
+def get_valid_card_combinations_by_rank(selected_player_card, selected_table_cards):
     target_value = int(selected_player_card['rank'])
 
     valid_combinations = []
+    invalid_cards = selected_table_cards.copy()  # Kopija originalnih karata
+
+    # Prolazimo kroz sve moguće kombinacije
     for i in range(1, len(selected_table_cards) + 1):
         for combo in combinations(selected_table_cards, i):
             if sum(int(card['rank']) for card in combo) == target_value:
                 valid_combinations.append(combo)
 
-    if not valid_combinations:
-        return 0
+                # Uklanjamo karte koje su deo ove validne kombinacije
+                for card in combo:
+                    if card in invalid_cards:
+                        invalid_cards.remove(card)
 
-    # Računanje poena za sve validne kombinacije
-    points = 0
-    points += check_card_points(selected_player_card)
+    valid_cards = [selected_player_card]
     for combo in valid_combinations:
         for card in combo:
-            points += check_card_points(card)
+            valid_cards.append(card)
 
-    return points
+    return valid_cards, invalid_cards
 
-def check_card_points(card):
-    if card['rank'] == '10' and card['suit'] == 'diamonds':
-        return 2
-    if card['rank'] in {'10', 'A', '12', '13', '14'} or (
-            card['rank'] == '2' and card['suit'] == 'clubs'):
-        return 1
 
-    return 0
+
+

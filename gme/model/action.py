@@ -1,4 +1,3 @@
-from .player import Player
 from dataclasses import dataclass, asdict
 
 @dataclass

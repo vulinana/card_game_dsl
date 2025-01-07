@@ -1,6 +1,6 @@
 from sqlalchemy.orm import joinedload
 
-from models import CardDB, UserGameCard, User, GameCard, GameDB, UserGame, PendingCard, GameRequest
+from models import UserGame
 from extensions import db
 
 

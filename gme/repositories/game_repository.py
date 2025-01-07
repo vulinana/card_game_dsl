@@ -6,9 +6,11 @@ from extensions import db
 
 class GameRepository:
     @staticmethod
-    def create_game_init(name, game_initiator):
+    def create_game_init(name, game_initiator, min_number_of_players, max_number_of_players):
         new_game = GameDB(name=name,
-                          game_initiator=game_initiator)
+                          game_initiator=game_initiator,
+                          min_number_of_players=min_number_of_players,
+                          max_number_of_players=max_number_of_players)
         db.session.add(new_game)
         db.session.commit()
         return new_game
@@ -29,12 +31,6 @@ class GameRepository:
     def update_current_player(game_id, new_current_player_id):
         game = GameDB.query.filter_by(id=game_id).first()
         game.current_player_id = new_current_player_id
-        db.session.commit()
-
-    @staticmethod
-    def increase_game_round(game_id):
-        game = GameDB.query.filter_by(id=game_id).first()
-        game.current_round = game.current_round + 1
         db.session.commit()
 
     @staticmethod

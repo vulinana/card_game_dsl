@@ -10,7 +10,9 @@ class Rules:
         self.number_of_rounds = model.number_of_rounds
         self.number_of_cards_per_round = model.number_of_cards_per_round
         self.number_of_table_cards = model.number_of_table_cards
-        self.actions = [Action(a) for a in model.actions]
+        self.winner_condition = model.winner_condition
+        self.new_round_condition = model.new_round_condition
+        self.next_player_in_round_condition = model.next_player_in_round_condition
 
     def to_dict(self):
         return asdict(self)

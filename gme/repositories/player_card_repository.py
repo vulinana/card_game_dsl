@@ -30,3 +30,7 @@ class PlayerCardRepository:
         db.session.delete(user_card_from_db)
         db.session.commit()
 
+    @staticmethod
+    def any_player_has_cards(game_id):
+        return db.session.query(db.exists().where(UserGameCard.game_id == game_id)).scalar()
+
