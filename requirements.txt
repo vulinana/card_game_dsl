@@ -1,5 +1,6 @@
 alembic==1.14.0
 Arpeggio==2.0.2
+bcrypt==4.2.1
 bidict==0.23.1
 blinker==1.8.2
 certifi==2024.2.2
