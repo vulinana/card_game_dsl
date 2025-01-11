@@ -1,0 +1,32 @@
+{
+    "GameSnippet": {
+        "prefix": "gme",
+        "body": [
+            "game ${1:game_name} {",
+            "   rules {",
+            "       min_number_of_players: ${2:2}",
+            "       max_number_of_players: ${3:4}",
+            "       number_of_rounds: ${4:4}",
+            "       number_of_cards_per_round: ${5:4}",
+            "       number_of_table_cards: ${6:0}",
+            "       winner_condition: ${7:highest_score}",
+            "       new_round_condition: ${8:circle_completed}",
+            "       next_player_in_round_condition: ${9:winner}",
+            "   }",
+            "   ",
+            "    actions {",
+            "           action ${10:follow_by_rank}",
+            "    }",
+            "    cards {",
+            "       card {",
+            "           name: ${11: 5 of hearts}",
+            "           score: ${12:0}",
+            "           count: ${13:4}",
+            "       }",
+            "   }",
+            "}"
+            
+        ],
+        "description": "Creates a basic structure of the game"
+    }
+}

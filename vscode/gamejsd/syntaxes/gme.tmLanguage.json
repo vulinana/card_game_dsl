@@ -1,0 +1,33 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Game DSL",
+	"patterns": [
+		{
+			"name": "keyword.control.gme",
+			"match": "\\b(game|rules|actions|action|cards|card|min_number_of_players|max_number_of_players|number_of_rounds|number_of_cards_per_round|number_of_table_cards|winner_condition|new_round_condition|next_player_in_round_condition|name|score|count)\\b"
+		},
+		{
+			"name": "string.quoted.double",
+			"begin": "\"",
+			"end": "\""
+		},
+		{
+			"name": "constant.numeric",
+			"match": "\\b(\\d*\\.?\\d+)\\b",
+			"captures": {
+			  "1": {
+				"name": "constant.numeric.float"
+			  }
+			}
+		},
+		{
+			"name": "entity.name.function.gme",
+			"match": "\\b(highest_score|lowest_score|no_cards_left|circle_completed|winner|circle_order|collect_by_rank|follow_by_rank|follow_by_suit|follow_by_rank_or_suit)\\b"
+		},
+		{
+			"name": "entity.name.function",
+			"match": "\\b\\w+\\b"
+	    }
+	],
+	"scopeName": "source.gme"
+}

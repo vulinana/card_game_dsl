@@ -1,0 +1,31 @@
+{
+  "name": "gamejsd",
+  "displayName": "GameJSD",
+  "description": "DSL for games",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.89.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "gme",
+      "aliases": ["Game DSL", "gme"],
+      "extensions": [".gme"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "gme",
+      "scopeName": "source.gme",
+      "path": "./syntaxes/gme.tmLanguage.json"
+    }],
+    "snippets": [
+      {
+        "language": "gme",
+        "path": "./snippets/snippets.code-snippets"
+      }
+    ]
+  }
+}
