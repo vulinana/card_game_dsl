@@ -1,54 +1,73 @@
 CardGame:
-    'game' name=ID '{'
-        rules=Rules
-        'actions' '{' actions+=Action[','] '}'
-        'cards' '{' cards+=CardCount[','] '}'
-    '}'
+    'game' name=ID
+     rules=Rules
+     states=States
+     cards=Cards?
 ;
 
 Rules:
-    'rules' '{'
-        'min_number_of_players' ':' min_number_of_players=INT
-        'max_number_of_players' ':' max_number_of_players=INT
-        'number_of_rounds' ':' number_of_rounds=INT
-        'number_of_cards_per_round' ':' number_of_cards_per_round=INT
-        'number_of_table_cards' ':' number_of_table_cards=INT
-        'winner_condition' ':' winner_condition=WinnerCondition
-        'new_round_condition' ':' new_round_condition=NewRoundCondition
-        'next_player_in_round_condition' ':' next_player_in_round_condition=NextPlayerCondition
-    '}'
+    'rules'
+        'min_players'  min_players=INT
+        'max_players' max_players=INT
+        'rounds' rounds=INT
+        ('table_cards_visible' table_cards_visible=BOOLEAN)?
+        'next_player_in_round_condition' next_player_in_round_condition=NextPlayerCondition
+        'game_winner' game_winner=GameWinner
 ;
 
-WinnerCondition:
-    'highest_score' | 'lowest_score'
-;
-
-NewRoundCondition:
-    'no_cards_left' | 'circle_completed'
+GameWinner:
+       'highest_score'
+     | 'lowest_score'
 ;
 
 NextPlayerCondition:
-    'winner' | 'circle_order'
+     'circle_order'
+    | 'last_played'
+;
+
+
+States:
+    'states'
+        states+=State
+;
+
+State:
+    'state' name=ID
+    'do' action=Action
+     transitions+=Transition*
+;
+
+Transition:
+    'then' nextState=[State] ('if' condition=BOOLEAN)?
 ;
 
 Action:
-    'action' action_type=ActionType ('if' condition=Condition)?
+    name=ID ('(' params=ParamList ')')?
 ;
 
-ActionType:
-    'collect_by_rank' | 'follow_by_rank' | 'follow_by_suit' | 'follow_by_rank_or_suit' // dodati akcije prilikom prosirenja
+ParamList:
+    (params+=Param[','] )?
 ;
 
-Condition:
-    'sum_greater_than' value=INT
+Param:
+    value=INT | value=ID | value=EnumList
+;
+
+EnumList:
+    '[' elements+=EnumValue[','] ']'
+;
+
+EnumValue:
+    'rank' | 'suit' | 'rank_or_suit' | 'rank_and_suit'
+;
+
+Cards:
+    'cards'
+        cards+=CardCount
 ;
 
 CardCount:
-    'card {'
-        'name:' card=Card
-        'score:' score=INT
-        'count:' count=INT
-    '}'
+    'card' card=Card 'appears' count=INT 'times, worth' score=INT 'points'
 ;
 
 Card:
@@ -61,4 +80,8 @@ Rank:
 
 Suit:
     'hearts' | 'diamonds' | 'clubs' | 'spades'
+;
+
+BOOLEAN:
+    'true' | 'false'
 ;

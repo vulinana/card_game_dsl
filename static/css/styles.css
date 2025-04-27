@@ -116,6 +116,10 @@ html, body {
     align-items: center;
 }
 
+.cards-frame {
+    height: 110px;
+}
+
 .card-image {
     width: 70px;
     height: 110px;

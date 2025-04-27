@@ -1,39 +1,39 @@
-game Tablic
+game Memo_Cards
 rules
+
   min_players 2
-  max_players 3
-  rounds 2
-  table_cards_visible true
-  next_player_in_round_condition last_played
+  max_players 4
+  rounds 1
+  table_cards_visible false
+  next_player_in_round_condition circle_order
   game_winner highest_score
 
 states
 
   state deal_table_cards
-    do deal_table_cards(2)
-    then deal_player_cards
-
-  state deal_player_cards
-    do deal_player_cards(2)
-    then next_player
+    do deal_table_cards(8)
+    then any_matching_table_cards
 
   state next_player
     do next_player
-    then throw_cards
-    then action2
+    then action_phase
 
-  state throw_cards
-    do throw_cards(1)
-    then any_players_cards
+  state action_phase
+    do select_table_cards(2)
+    then reveal
 
-  state action2
-    do select_player_cards_and_table_cards(1, no_limit)
-    then validate_cards_selection
+  state reveal
+    do reveal_selected_cards
+    then matching_cards
 
-  state validate_cards_selection
-    do cards_selection_sum_matching
+  state matching_cards
+    do selected_cards_match(rank)
+    then flip_back if false
     then mark_matching_cards_for_scoring if true
-    then notify_player_of_invalid_move if false
+
+  state flip_back
+    do reset_table_cards_visibility
+    then next_player
 
   state mark_matching_cards_for_scoring
     do mark_matching_cards_for_scoring
@@ -45,15 +45,10 @@ states
 
   state remove_selected_cards
     do remove_selected_cards
-    then any_players_cards
+    then any_matching_table_cards
 
-  state notify_player_of_invalid_move
-    do notify_player_of_invalid_move
-    then throw_cards
-    then action2
-
-  state any_players_cards
-    do check_if_any_players_cards
+  state any_matching_table_cards
+    do any_matching_table_cards(rank)
     then next_player if true
     then new_round if false
 
@@ -63,7 +58,7 @@ states
 
   state rounds_remaining
     do check_if_rounds_remaining
-    then deal_player_cards if true
+    then deal_table_cards if true
     then game_end if false
 
   state game_end

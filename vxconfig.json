@@ -1,0 +1,18 @@
+{
+  "project": {
+    "type": "viewX",
+    "name": "card_game_dsl",      
+    "version": "0.2.1",              
+    "root": ".",                      
+    "socketPort": 4000              
+  },
+  "viewXModels": {
+    "root": ".",                   
+    "patternMappings": [
+      {
+        "modelName": "views/card_game_overview.vx", 
+        "pattern": "gme/games/*.gme"                    
+      }
+    ]
+  }
+}

@@ -1,0 +1,67 @@
+game Follow_By_Rank
+rules 
+	min_players 2
+    max_players 4
+    rounds 2
+	table_cards_visible true
+    next_player_in_round_condition last_played
+	game_winner highest_score
+
+states
+
+    state deal_cards_to_players
+        do fill_player_hand_to(5)
+        then next_player1
+
+    state next_player1
+        do next_player
+        then action_phase1
+
+    state action_phase1
+        do throw_cards(1)
+        then next_player2
+
+    state action_phase2
+        do throw_cards(1)
+        then any_matching_table_cards
+
+    state any_matching_table_cards
+        do any_matching_table_cards(rank)
+        then next_player2 if false
+        then mark_table_cards_for_scoring if true
+
+    state mark_table_cards_for_scoring
+        do mark_all_table_cards_for_scoring
+        then round_end
+
+    state next_player2
+        do next_player
+        then action_phase2
+
+    state round_end
+        do calculate_points
+        then remove_table_cards
+
+    state new_round
+        do new_round
+        then remaining_rounds
+
+    state remaining_rounds
+        do check_if_rounds_remaining
+        then deal_cards_to_players if true
+        then game_end if false
+
+    state remove_table_cards
+        do remove_table_cards
+        then new_round
+
+    state game_end
+        do determine_game_winner
+
+cards
+
+    card 5 of hearts appears 4 times, worth 0 points
+    card 13 of hearts appears 4 times, worth 0 points
+    card 5 of diamonds appears 4 times, worth 0 points
+    card 10 of clubs appears 4 times, worth 10 points
+        

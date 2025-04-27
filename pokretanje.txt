@@ -1,4 +1,0 @@
-python -m app
-
-
---zbog importa neki problem

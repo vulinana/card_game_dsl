@@ -4,12 +4,7 @@
 	"patterns": [
 		{
 			"name": "keyword.control.gme",
-			"match": "\\b(game|rules|actions|action|cards|card|min_number_of_players|max_number_of_players|number_of_rounds|number_of_cards_per_round|number_of_table_cards|winner_condition|new_round_condition|next_player_in_round_condition|name|score|count)\\b"
-		},
-		{
-			"name": "string.quoted.double",
-			"begin": "\"",
-			"end": "\""
+			"match": "\\b(game|rules|min_players|max_players|rounds|table_cards_visible|next_player_in_round_condition|winner_condition|game_winner|states|state|do|then|cards|card|appears|worth|points)\\b"
 		},
 		{
 			"name": "constant.numeric",
@@ -21,8 +16,12 @@
 			}
 		},
 		{
-			"name": "entity.name.function.gme",
-			"match": "\\b(highest_score|lowest_score|no_cards_left|circle_completed|winner|circle_order|collect_by_rank|follow_by_rank|follow_by_suit|follow_by_rank_or_suit)\\b"
+			"name": "constant.language.boolean.gme",
+			"match": "\\b(true|false)\\b"
+		},
+		{
+			"name": "constant.language.enum.gme",
+			"match": "\\b(highest_score|lowest_score|circle_order|last_played|rank|suit|rank_or_suit|rank_and_suit)\\b"
 		},
 		{
 			"name": "entity.name.function",

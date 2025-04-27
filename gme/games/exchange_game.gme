@@ -1,0 +1,72 @@
+game Card_Exchange_Game
+rules
+
+  min_players 1
+  max_players 4
+  rounds 1
+  next_player_in_round_condition circle_order
+  game_winner highest_score
+
+states
+
+  state deal_player_cards
+    do deal_player_cards(5)
+    then next_player
+
+  state next_player
+    do next_player
+    then player_cards_match
+
+  state player_cards_match
+    do player_has_matching_cards(rank)
+    then mark_matching_cards_for_scoring if true
+    then card_exchange if false
+
+  state mark_matching_cards_for_scoring
+    do mark_matching_cards_for_scoring
+    then award_points
+
+  state award_points
+    do calculate_points
+    then remove_cards
+
+  state remove_cards
+    do remove_selected_cards
+    then check_players_cards
+
+  state card_exchange
+    do exchange_cards(2)
+    then next_player
+
+  state check_players_cards
+    do current_player_min_has_cards(2)
+    then card_exchange if true
+    then new_round if false
+
+  state new_round
+    do new_round
+    then remaining_rounds
+
+  state remaining_rounds
+    do check_if_rounds_remaining
+    then remove_players_cards if true
+    then game_end if false
+
+  state remove_players_cards
+    do remove_players_cards
+    then deal_player_cards
+
+  state game_end
+    do determine_game_winner
+
+cards
+
+    card 5 of hearts appears 1 times, worth 0 points
+    card 13 of hearts appears 1 times, worth 0 points
+    card 5 of diamonds appears 1 times, worth 0 points
+    card 10 of clubs appears 1 times, worth 10 points
+    card 9 of clubs appears 1 times, worth 10 points
+    card 8 of clubs appears 1 times, worth 10 points
+    card 7 of clubs appears 1 times, worth 10 points
+    card 6 of clubs appears 1 times, worth 10 points
+    card 5 of clubs appears 2 times, worth 10 points

@@ -8,7 +8,7 @@ window.addEventListener('beforeunload', function (event) {
   event.preventDefault()
 });
 
-var selected_player_card = null;
+var selectedPlayerCards = [];
 var selected_table_cards = [];
 var selected_game = null;
 var game_id = null
@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('games_loaded', data => {
         const gameList = document.getElementById('game-list');
         gameList.innerHTML = '';
-
         data.games.forEach((game, index) => {
             const button = document.createElement('button');
             button.textContent = game.name;
@@ -115,23 +114,115 @@ document.addEventListener('DOMContentLoaded', () => {
         showAlert(data.message, () => {});
     });
 
-    socket.on('not_enough_players', (data) => {
+    socket.on('notification', (data) => {
         hideLoader()
         showAlert(data.message, () => {});
     });
 
-    socket.on('loaded_game_by_name', (data) => {
-        hideLoader()
+    socket.on('toastr', (data) => {
+        showNotification(data.message, 3000);
+    });
+
+     socket.on('choose_player_to_exchange', (data) => {
+        const player_buttons = document.createElement('div');
+        const title = document.createElement('div')
+        title.id = 'playground-game-title';
+        title.style.textAlign = 'center';
+        title.style.fontSize = '12px';
+        title.style.marginBottom = '5px';
+        title.innerHTML = `Exchange ${data.numberOfCards} cards with:`
+        player_buttons.appendChild(title)
+
+        data.players.forEach(player => {
+            const button = document.createElement('button');
+            button.textContent = player;
+            button.className = 'player-button';
+            button.onclick = () => {
+                document.querySelectorAll('.player-button.selected').forEach(btn => btn.classList.remove('selected'));
+                selected_rivals = [];
+                button.classList.add('selected');
+                selected_rivals.push(player);
+            };
+            player_buttons.appendChild(button);
+        });
+
+        showAlert(player_buttons, () => {
+            socket.emit('user_selected', game_id, selected_rivals[0])
+        });
+    });
+
+    socket.on('waiting', () => {
+        showLoader()
+    });
+
+    socket.on('set_points', (data) => {
+        data.game_players.forEach((player, index) => {
+            const nameLabel = document.getElementById(player.email)
+            if (nameLabel) nameLabel.textContent = `${player.email}: ${player.points}`;
+        });
+    });
+
+    function setRound(round) {
         const playground = document.getElementById('playground');
-        playground.innerHTML = '';
+        const oldRoundText = document.getElementById('roundText')
+        if (oldRoundText)
+            oldRoundText.remove()
 
-        game_id = data.game_id;
-        selected_table_cards = [];
-        selected_player_card = null;
+        const roundText = document.createElement('div');
+        roundText.id = 'roundText'
+        roundText.textContent = "Round " + round;
+        roundText.style.position = 'absolute';
+        roundText.style.top = '0';
+        roundText.style.left = '0';
+        roundText.style.padding = '10px';
+        roundText.style.color = 'black';
+        roundText.style.fontSize = '20px';
+        playground.appendChild(roundText);
+    }
 
+    function clearPlayground(){
+        hideLoader()
+        const title = document.getElementById('playground-game-title')
+        if (title) title.remove()
+        const playerButtons = document.querySelector('.player-buttons');
+        if (playerButtons) playerButtons.remove();
+        const sendInvitationButton = document.querySelector('.player-button');
+        if (sendInvitationButton) sendInvitationButton.remove();
+    }
+
+    function clearTableCards() {
+        clearPlayground()
+        const existingTableCards = document.querySelector('.table-cards');
+        if (existingTableCards) existingTableCards.remove();
+    }
+
+    function clearPlayerCards() {
+       clearPlayground()
+       const existingPlayerCards = document.querySelectorAll('.player-frame');
+
+        if (existingPlayerCards?.length > 0) {
+            existingPlayerCards.forEach(el => el.innerHTML = '');
+        }
+    }
+
+    socket.on('display_table_cards', (data) => {
+        game_id = data.game_id
+        selectedPlayerCards = []
+        selected_table_cards = []
+        clearTableCards()
+        setRound(data.round)
+        displayTableCards(data.cards);
+    });
+
+
+    socket.on('display_player_cards', (data) => {
+        game_id = data.game_id
+        selectedPlayerCards = []
+        selected_table_cards = []
+        clearPlayerCards()
+        setRound(data.round)
         displayRivalCards(data.rivals);
-        displayTableCards(data.table_cards);
-        displayPlayerCards(data.player.cards, data.player.points);
+        displayPlayerCards(data.player, data.player.points);
     });
 
     function displayRivalCards(rivals) {
@@ -142,10 +233,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         rivals.forEach((rival, index) => {
             const playerFrame = document.createElement('div');
-            playerFrame.classList.add('player-frame');
+            playerFrame.className = 'player-frame';
             playerFrame.style.position = 'absolute';
 
             const nameLabel = document.createElement('span');
+            nameLabel.id = rival.player_email
             nameLabel.textContent = `${rival.player_email}: ${rival.points}`;
             nameLabel.className = 'name-label';
 
@@ -189,76 +281,111 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayTableCards(cards) {
         const playground = document.getElementById('playground');
 
-        const playerButtons = document.querySelector('.player-buttons');
-        if (playerButtons) playerButtons.remove();
-
-        const existingTableCards = document.querySelector('.table-cards');
-        if (existingTableCards) existingTableCards.remove();
-
         const tableCardsContainer = document.createElement('div');
         tableCardsContainer.className = 'table-cards';
 
         cards.forEach(card => {
             const cardElement = document.createElement('img');
-            cardElement.src = `static/imgs/${card.rank}_of_${card.suit}.png`;
+            if (card.visible)
+                cardElement.src = `static/imgs/${card.rank}_of_${card.suit}.png`;
+            else
+                cardElement.src = '/static/imgs/card_background.png';
             cardElement.alt = `${card.rank} of ${card.suit}`;
             cardElement.className = 'card-image';
             cardElement.style.cursor = 'not-allowed';
+            cardElement.dataset.id = card.id
             cardElement.dataset.rank = card.rank;
             cardElement.dataset.suit = card.suit;
+            cardElement.dataset.cardType = card.card_type
 
             tableCardsContainer.appendChild(cardElement);
         });
 
         playground.appendChild(tableCardsContainer);
-
-        socket.emit('is_player_turn', game_id);
-        socket.on('player_turn_status', (data) => {
-            const isTurn = data.is_turn;
-            const cardElements = document.querySelectorAll('.card-image');
-
-            cardElements.forEach(card => {
-                if (isTurn) {
-                    card.style.cursor = 'pointer';
-                    card.onclick = () => {
-                        const rank = card.dataset.rank;
-                        const suit = card.dataset.suit;
-                        if (card.classList.contains('selected')) {
-                            removeTableCard({'rank': rank, 'suit': suit});
-                            card.classList.remove('selected');
-                        } else {
-                            selected_table_cards.push({'rank': rank, 'suit': suit});
-                            card.classList.add('selected');
-                        }
-                    };
-                } else {
-                    card.style.cursor = 'not-allowed';
-                    card.onclick = null;
-                }
-            });
-        });
     }
 
-    function displayPlayerCards(cards, points) {
+    socket.on('player_turn_status', (data) => {
+        console.log("player_turn_status", data.is_turn)
+        const isTurn = data.is_turn;
+        const cardElements = document.querySelectorAll('.card-image');
+
+        cardElements.forEach(card => {
+            if (isTurn) {
+                card.style.cursor = 'pointer';
+                card.onclick = () => {
+                    const id = card.dataset.id
+                    const rank = card.dataset.rank;
+                    const suit = card.dataset.suit;
+                    const cardType = card.dataset.cardType
+
+                    if (card.classList.contains('selected')) {
+                        removeTableCard({'id': id, 'rank': rank, 'suit': suit, 'card_type': cardType});
+                        card.classList.remove('selected');
+                    } else {
+                        selected_table_cards.push({'id': id, 'rank': rank, 'suit': suit, 'card_type': cardType});
+                        card.classList.add('selected');
+                    }
+                };
+            } else {
+                card.style.cursor = 'not-allowed';
+                card.onclick = null;
+            }
+        });
+
+        const playerCardElements = document.querySelectorAll('.player-card-image');
+        playerCardElements.forEach(card => {
+            if (isTurn) {
+                card.style.cursor = 'pointer';
+                card.onclick = () => {
+                    const id = card.dataset.id;
+                    const rank = card.dataset.rank;
+                    const suit = card.dataset.suit;
+                    const cardType = card.dataset.cardType
+                    if (card.classList.contains('selected-player-card')) {
+                        card.classList.remove('selected-player-card');
+                        selectedPlayerCards = selectedPlayerCards.filter(selectedCard =>
+                            !(selectedCard.id === id)
+                        );
+                    } else {
+                        if (!data.maxPlayersCardsSelectable || selectedPlayerCards.length < data.maxPlayersCardsSelectable) {
+                            card.classList.add('selected-player-card');
+                            selectedPlayerCards.push({ id: id, rank: rank, suit: suit, card_type: cardType });
+                        } else {
+                            showNotification(`Max number of selected hand cards is ${data.maxPlayersCardsSelectable}. Deselect one before selecting another.`, 3000);
+                        }
+                    }
+                };
+            } else {
+                card.style.cursor = 'not-allowed';
+                card.onclick = null;
+            }
+        });
+    });
+
+    function displayPlayerCards(player, points) {
         const playground = document.getElementById('playground');
 
         const playerFrame = document.createElement('div');
-        playerFrame.classList.add('player-frame');
+        playerFrame.className = 'player-frame';
+        playerFrame.style.position = 'absolute';
 
         const nameLabel = document.createElement('span');
-        nameLabel.textContent = `You: ${points}`;
+        nameLabel.id = player.player_email
+        nameLabel.textContent = `${player.player_email}: ${points}`;
         nameLabel.className = 'name-label';
 
         const cardsFrame = document.createElement('div');
         cardsFrame.className = 'cards-frame';
 
-        cards.forEach(card => {
+        player.cards.forEach(card => {
             const cardElement = document.createElement('img');
             cardElement.className = 'player-card-image';
             cardElement.src = `/static/imgs/${card.rank}_of_${card.suit}.png`;
             cardElement.style.cursor = 'not-allowed';
+            cardElement.dataset.id = card.id;
             cardElement.dataset.rank = card.rank;
             cardElement.dataset.suit = card.suit;
+            cardElement.dataset.cardType = card.card_type
 
             cardsFrame.appendChild(cardElement);
         });
@@ -266,31 +393,6 @@ document.addEventListener('DOMContentLoaded', () => {
         playerFrame.appendChild(cardsFrame);
         playerFrame.appendChild(nameLabel);
         playground.appendChild(playerFrame);
-
-        socket.emit('is_player_turn', game_id);
-        socket.on('player_turn_status', (data) => {
-            const isTurn = data.is_turn;
-            const cardElements = document.querySelectorAll('.player-card-image');
-
-            cardElements.forEach(card => {
-                if (isTurn) {
-                    card.style.cursor = 'pointer';
-                    card.onclick = () => {
-                        const rank = card.dataset.rank;
-                        const suit = card.dataset.suit;
-                        selected_player_card = {'rank': rank, 'suit': suit};
-
-                        const selectedCards = document.querySelectorAll('.player-card-image.selected-player-card');
-                        selectedCards.forEach(el => el.classList.remove('selected-player-card'));
-
-                        card.classList.toggle('selected-player-card');
-                    };
-                } else {
-                    card.style.cursor = 'not-allowed';
-                    card.onclick = null;
-                }
-            });
-        });
     }
 
     function removeTableCard(card) {
@@ -335,7 +437,7 @@ function logout() {
 }
 
 function finishMove() {
-    socket.emit('finish_move', game_id, selected_table_cards, selected_player_card)
+    socket.emit('finish_move', game_id, selected_table_cards, selectedPlayerCards)
 }
 
 function gameRules() {
@@ -349,7 +451,12 @@ function showModal(message, onAccept, onDecline) {
     const acceptButton = document.getElementById('modal-accept');
     const declineButton = document.getElementById('modal-decline');
 
-    modalMessage.innerHTML = message;
+    modalMessage.innerHTML = '';
+    if (message instanceof HTMLElement) {
+        modalMessage.appendChild(message)
+    } else {
+        modalMessage.innerHTML = message;
+    }
     modal.style.display = 'flex';
 
     closeButton.onclick = () => {
@@ -401,3 +508,4 @@ function hideLoader() {
     const loaderOverlay = document.getElementById('loader-overlay');
     loaderOverlay.style.visibility = 'hidden';
 }
+

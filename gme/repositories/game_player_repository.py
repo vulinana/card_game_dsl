@@ -24,4 +24,9 @@ class GamePlayerRepository:
     def get_game_player(game_id, user_id):
         return UserGame.query.filter_by(game_id=game_id, user_id=user_id).first()
 
+    @staticmethod
+    def update_player_points(user_id, game_id, points):
+        game_player = GamePlayerRepository.get_game_player(game_id, user_id)
+        game_player.points += points
+        db.session.commit()
 

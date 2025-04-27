@@ -1,5 +1,7 @@
-from sqlalchemy import Enum
+from sqlalchemy import Enum, JSON
 import enum
+
+
 from extensions import db
 
 class User(db.Model):
@@ -21,15 +23,9 @@ class GameDB(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    min_number_of_players = db.Column(db.Integer, nullable=True)
-    max_number_of_players = db.Column(db.Integer, nullable=True)
     game_initiator_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     current_player_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    number_of_rounds = db.Column(db.Integer)
-    number_of_cards_per_round = db.Column(db.Integer)
-    winner_condition = db.Column(db.String(80), nullable=True)
-    new_round_condition = db.Column(db.String(80), nullable=True)
-    next_player_in_round_condition = db.Column(db.String(80), nullable=True)
+    next_states = db.Column(JSON, nullable=False, default=list)
 
     game_initiator = db.relationship('User', foreign_keys=[game_initiator_id], backref='initiated_games')
     current_player = db.relationship('User', foreign_keys=[current_player_id], backref='current_games')
@@ -39,22 +35,10 @@ class GameDB(db.Model):
     table_cards = db.relationship('TableCard', back_populates='game', cascade="all, delete-orphan")
     game_cards = db.relationship('CardDB', back_populates='game', cascade="all, delete-orphan")
     pending_cards = db.relationship('PendingCard', back_populates='game', cascade="all, delete-orphan")
-    game_actions = db.relationship('GameAction', back_populates='game', cascade="all, delete-orphan")
     rounds = db.relationship('Round', back_populates='game', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Game {self.name}>'
-
-class GameAction(db.Model):
-    __tablename__ = 'game_actions'
-
-    id = db.Column(db.Integer, primary_key=True)
-    action_type = db.Column(db.String(80), nullable=False)
-    game_id = db.Column(db.Integer, db.ForeignKey('games.id'), nullable=False)
-
-    game = db.relationship('GameDB', back_populates='game_actions')
-    def __repr__(self):
-        return f'<GameAction {self.action_type}>'
 
 class GameRequestStatus(enum.Enum):
     PENDING = "PENDING"
@@ -104,10 +88,16 @@ class UserGame(db.Model):
     game = db.relationship('GameDB', back_populates='user_games')
 
     user_game_cards = db.relationship('UserGameCard', back_populates='user_game', cascade="all, delete-orphan")
-    played_cards = db.relationship('PlayedCard', back_populates='user_game', cascade="all, delete-orphan")
+    valid_cards = db.relationship('ValidCard', back_populates='user_game', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<UserGame user_id={self.user_id} game_id={self.game_id}>'
+
+    def to_dict(self):
+        return {
+            'email': self.user.email,
+            'points': self.points
+    }
 
 
 class TableCard(db.Model):
@@ -115,6 +105,7 @@ class TableCard(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     game_id = db.Column(db.Integer, db.ForeignKey('games.id', ondelete='CASCADE'), nullable=False)
     card_id = db.Column(db.Integer, db.ForeignKey('cards.id', ondelete='CASCADE'), nullable=False)
+    visible = db.Column(db.Boolean, nullable=False, default=True)
 
     game = db.relationship('GameDB', back_populates='table_cards')
     card = db.relationship('CardDB', back_populates='table_cards')
@@ -124,7 +115,16 @@ class TableCard(db.Model):
     )
 
     def __repr__(self):
-        return f'<TableCard game_id={self.game_id} card_id={self.card_id}>'
+        return f'<TableCard game_id={self.game_id} card_id={self.card_id} visible={self.visible}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'rank': self.card.rank,
+            'suit': self.card.suit,
+            'visible': self.visible,
+            'card_type': CardTypeEnum.TABLE_CARD.value
+    }
 
 
 class UserGameCard(db.Model):
@@ -149,6 +149,15 @@ class UserGameCard(db.Model):
     def __repr__(self):
         return f'<UserGameCard user_id={self.user_id} game_id={self.game_id} card_id={self.card_id}>'
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'rank': self.card.rank,
+            'suit': self.card.suit,
+            'card_type': CardTypeEnum.PLAYER_CARD.value
+        }
+
+
 class PendingCard(db.Model):
     __tablename__ = 'pending_cards'
     id = db.Column(db.Integer, primary_key=True)  # Jedinstveni ID za svaki zapis
@@ -166,35 +175,6 @@ class CardTypeEnum(enum.Enum):
     PLAYER_CARD = 'player_card'
     TABLE_CARD = 'table_card'
 
-class PlayedCard(db.Model):
-    __tablename__ = 'played_cards'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, nullable=False)
-    game_id = db.Column(db.Integer, nullable=False)
-    card_id = db.Column(db.Integer, db.ForeignKey('cards.id', ondelete='CASCADE'), nullable=False)
-    round_id = db.Column(db.Integer, db.ForeignKey('rounds.id'))
-    card_type = db.Column(Enum(CardTypeEnum), default=CardTypeEnum.PLAYER_CARD, nullable=False)
-
-    user_game = db.relationship(
-        'UserGame',
-        back_populates='played_cards',
-        primaryjoin='and_(PlayedCard.user_id == UserGame.user_id, PlayedCard.game_id == UserGame.game_id)'
-    )
-    card = db.relationship('CardDB', backref='played_cards')
-    round = db.relationship('Round', back_populates='played_cards')
-
-    __table_args__ = (
-        db.ForeignKeyConstraint(
-            ['user_id', 'game_id'],
-            ['users_games.user_id', 'users_games.game_id'],
-            ondelete='CASCADE'
-        ),
-        db.Index('ix_user_game_played_card', 'user_id', 'game_id', 'card_id')
-    )
-
-    def __repr__(self):
-        return f'<PlayedCard user_id={self.user_id} game_id={self.game_id} card_id={self.card_id}>'
-
 class Round(db.Model):
     __tablename__ = 'rounds'
     id = db.Column(db.Integer, primary_key=True)
@@ -207,7 +187,32 @@ class Round(db.Model):
     round_initiator = db.relationship('User', foreign_keys=[round_initiator_id], backref='initiated_rounds')
     winner = db.relationship('User', foreign_keys=[winner_id], backref='won_rounds')
 
-    played_cards = db.relationship('PlayedCard', back_populates='round', cascade="all, delete-orphan")
-
     def __repr__(self):
         return f'<Round number={self.number} game_id={self.game_id} winner_id={self.winner_id}>'
+
+
+class ValidCard(db.Model):
+    __tablename__ = 'valid_cards'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    game_id = db.Column(db.Integer, nullable=False)
+    card_id = db.Column(db.Integer, nullable=False)  # Card ID je običan Integer, nije ForeignKey
+    card_type = db.Column(Enum(CardTypeEnum), default=CardTypeEnum.PLAYER_CARD, nullable=False)
+
+    user_game = db.relationship(
+        'UserGame',
+        back_populates='valid_cards',
+        primaryjoin='and_(ValidCard.user_id == UserGame.user_id, ValidCard.game_id == UserGame.game_id)'
+    )
+
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['user_id', 'game_id'],
+            ['users_games.user_id', 'users_games.game_id'],
+            ondelete='CASCADE'
+        ),
+        db.Index('ix_user_game_valid_card', 'user_id', 'game_id', 'card_id')
+    )
+
+
+

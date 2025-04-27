@@ -34,6 +34,11 @@ def load_games_shared():
     game_files = scan_game_files()
     return [load_game_model(file_path) for file_path in game_files]
 
+def try_parse_int(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
 def random_cards(card_count_list, number):
     selected_cards = []

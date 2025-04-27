@@ -1,0 +1,10 @@
+{
+  "elements": [
+    {
+      "type": "node",
+      "id": "root",
+      "label": "Game Overview",
+      "position": { "x": 300, "y": 100 }
+    }
+  ]
+}
