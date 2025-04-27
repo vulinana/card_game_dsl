@@ -26,7 +26,6 @@ class GameService:
         GameService.create_pending_cards(new_game.id, game.cards)
         return new_game
 
-
     @staticmethod
     def create_game_players(game_id):
         game_from_db = GameRepository.get_game(game_id)
@@ -41,27 +40,6 @@ class GameService:
     @staticmethod
     def get_game_players(game_id):
         return GamePlayerRepository.get_game_players(game_id)
-
-    @staticmethod
-    def next_player(game, game_players, is_new_round):
-        if not is_new_round:
-            next_player = GameService.get_next_player_circle_order(game, game_players)
-        else:
-            if game.next_player_in_round_condition == "winner":
-                next_player = RoundRepository.get_previous_round(game.id).winner
-            else:
-                next_player = GameService.get_next_player_circle_order(game, game_players)
-            RoundRepository.update_current_round_initiator(game.id, next_player.id)
-
-        GameRepository.update_current_player(game.id, next_player.id)
-
-    @staticmethod
-    def get_next_player_circle_order(game, game_players):
-        current_index = next(i for i, player in enumerate(game_players) if player.user.id == game.current_player.id)
-        next_index = (current_index + 1) % len(
-            game_players)  # Kružni redosled, ako smo na poslednjem igraču, vraćamo se na prvog
-        next_player = game_players[next_index].user
-        return next_player
 
     @staticmethod
     def get_players_cards_data(game_id):
@@ -85,6 +63,7 @@ class GameService:
     def get_table_cards(game_id):
         table_cards = TableCardRepository.get_table_cards(game_id=game_id)
         return [card.to_dict() for card in table_cards]
+
     @staticmethod
     def create_table_cards(game_id, cards, visible):
         for card in cards:
@@ -104,17 +83,6 @@ class GameService:
     def create_player_card(game_id, user_id, card_rank, card_suit):
         card_from_db = CardRepository.get(game_id, card_rank, card_suit)
         PlayerCardRepository.create_player_card(game_id, user_id, card_from_db.id)
-
-    @staticmethod
-    def delete_player_card(user_id, game_id, card_rank, card_suit):
-        card_from_db = CardRepository.get(game_id, card_rank, card_suit)
-        PlayerCardRepository.delete_player_card(user_id, game_id, card_from_db.id)
-
-    @staticmethod
-    def delete_table_cards(game_id, cards):
-        for card in cards:
-            card_from_db = CardRepository.get(game_id, card['rank'], card['suit'])
-            TableCardRepository.delete_table_card(game_id, card_from_db.id)
 
     @staticmethod
     def get_game(game_id):

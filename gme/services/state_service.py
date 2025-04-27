@@ -11,7 +11,6 @@ from gme.repositories.valid_card_repository import ValidCardRepository
 from gme.services.game_service import GameService
 from gme.utils import random_cards, get_valid_card_combinations_by_rank
 from models import CardTypeEnum
-from dataclasses import asdict
 
 
 class StateService:
