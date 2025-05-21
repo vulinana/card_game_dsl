@@ -15,9 +15,9 @@ class Rules:
 
     def to_text(self):
         text = (
-            f"Minimum number of players: {self.min_players}<br>"
-            f"Maximum number of players: {self.max_players}<br>"
-            f"Number of rounds: {self.rounds}<br>"
+            f"Minimum players: {self.min_players}<br>"
+            f"Maximum players: {self.max_players}<br>"
+            f"Rounds: {self.rounds}<br>"
         )
 
         if self.game_winner == "highest_score":

@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, send_file
 from flask_socketio import emit
-from textx import metamodel_from_file
 
 from gme.services.game_service import GameService
 from gme.services.state_service import StateService
