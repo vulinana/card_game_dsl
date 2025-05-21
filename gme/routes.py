@@ -1,11 +1,14 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, send_file
 from flask_socketio import emit
+from textx import metamodel_from_file
+
 from gme.services.game_service import GameService
 from gme.services.state_service import StateService
 from gme.services.user_service import UserService
 from gme.utils import load_games_shared, try_parse_int
 from extensions import socketio
 from models import GameRequestStatus
+from graphviz import Digraph
 
 gme_routes = Blueprint('gme', __name__, static_folder='static', template_folder='templates')
 
@@ -430,4 +433,39 @@ def get_game_rules(game_name):
     game = next((game for game in load_games_shared() if game_name == game.name), None)
     text = f"{game.name}<br><br>"
     text += game.rules.to_text()
-    emit('game_rules', {'rules': text}, to=request.sid)
+
+    dot = Digraph(comment='Card Game State Machine')
+    dot.attr(rankdir='TB')
+    dot.attr('node', style='filled', fontname='Helvetica', shape='box', fillcolor='lightblue')
+
+    for state in game.states:
+        params = ', '.join(str(p) for p in state.action.params)
+        action_label = f"{state.action.name}({params})" if params else state.action.name
+        label = f"{state.name}\n[do: {action_label}]"
+        dot.node(state.name, label=label)
+
+    for state in game.states:
+        for transition in state.transitions:
+            label = ''
+            if transition.condition is not None:
+                label = f"if {transition.condition}".lower()
+            color = 'black'
+            if str(transition.condition).lower() == 'false':
+                color = 'red'
+            elif str(transition.condition).lower() == 'true':
+                color = 'green'
+            dot.edge(state.name, transition.nextState, label=label, color=color)
+
+    output_path = f'static/game_photos/{game.name}'
+    dot.format = 'png'
+    dot.render(output_path, cleanup=True)
+
+    image_url = f"/static/game_photos/{game.name}.png"
+
+    emit('game_rules', {
+        'rules': text,
+        'image_url': image_url
+    }, to=request.sid)
+
+
+

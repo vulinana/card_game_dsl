@@ -422,7 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('game_rules', (data) => {
-        showAlert(data.rules)
+        showAlert(data.rules, () => {}, data.image_url)
     });
 
 });
@@ -482,16 +482,33 @@ function showModal(message, onAccept, onDecline) {
     };
 }
 
-function showAlert(message, onOk) {
+function showAlert(message, onOk, imageUrl = null) {
     const declineButton = document.getElementById('modal-decline');
     const acceptButton = document.getElementById('modal-accept');
-
 
     declineButton.style.display = 'none';
     acceptButton.textContent = 'OK';
 
-    showModal(message, () => {
-        onOk();
+    let content = document.createElement('div');
+
+    if (typeof message === 'string') {
+        content.innerHTML = message;
+    } else {
+        content.appendChild(message);
+    }
+
+    if (imageUrl) {
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.style.maxWidth = '100%';
+        img.style.marginTop = '20px';
+        img.style.border = '1px solid #ccc';
+        content.appendChild(img);
+        console.log("postoji")
+    }
+
+    showModal(content, () => {
+        if (onOk) onOk();
         const modal = document.getElementById('custom-modal');
         modal.style.display = 'none';
         declineButton.style.display = '';
