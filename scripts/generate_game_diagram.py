@@ -2,10 +2,14 @@ import sys
 import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from gme.utils import load_game_model
+from textx import metamodel_from_file
+from gme.model.card_game import CardGame
 from graphviz import Digraph
 
+def module_path(relative_path):
+    return os.path.join(os.path.dirname(__file__), relative_path)
+
+entity_mm = metamodel_from_file(module_path('../gme/grammar.tx'))
 
 def generate_diagram(game_name):
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -15,7 +19,8 @@ def generate_diagram(game_name):
         print(f"Game file not found: {game_file_path}")
         sys.exit(1)
 
-    game = load_game_model(game_file_path)
+    model = entity_mm.model_from_file(game_file_path)
+    game =  CardGame(model)
 
     dot = Digraph(comment='Card Game State Machine')
     dot.attr(rankdir='TB')
