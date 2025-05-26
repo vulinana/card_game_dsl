@@ -28,14 +28,14 @@ and add interpreter from folder **card_game_dsl** needed requirements of package
 The custom Domain-Specific Language (DSL) for card games is designed to provide a simple, readable, and expressive way to define the structure and rules of turn-based card games. 
 The specification is organized into clearly separated blocks: game, rules, states, and cards. Each of these blocks plays a specific role in describing the gameplay.
 
-### game Block
+### game block
 Defines the name of the game. This is the root declaration under which all other definitions (rules, states, and cards) are grouped.
 
 ```
 game Tablic
 ```
 
-### rules Block
+### rules block
 Specifies the foundational rules and constraints for the game. These parameters determine how the game operates and ends.
 
 ```
@@ -48,7 +48,7 @@ rules
   game_winner highest_score
 ```
 
-### states Block
+### states block
 Defines the game flow using a state machine model. Each state represents a step in gameplay that includes an action (do) and one or more possible transitions (then) to other states.
 
 There are three types of transitions depending on how many then statements are defined and whether they use conditions.
@@ -78,11 +78,11 @@ state validate_cards_selection
   then notify_player_of_invalid_move if false
 ```
 
-### cards Block
+### cards block
 Defines the complete deck of cards used in the game. Each card entry includes its value, suit, number of appearances, and point value.
 
 ```
-card 5 of hearts appears 4 times, worth 0 points
+    card 5 of hearts appears 4 times, worth 0 points
     card 13 of hearts appears 4 times, worth 0 points
     card 5 of diamonds appears 4 times, worth 0 points
     card 10 of clubs appears 4 times, worth 10 points
