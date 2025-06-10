@@ -2,7 +2,7 @@ CardGame:
     'game' name=ID
      rules=Rules
      states=States
-     cards=Cards?
+     cards=Cards
 ;
 
 Rules:
@@ -50,15 +50,12 @@ ParamList:
 ;
 
 Param:
-    value=INT | value=ID | value=EnumList
+    value=INT | value=EnumValue
 ;
 
-EnumList:
-    '[' elements+=EnumValue[','] ']'
-;
 
 EnumValue:
-    'rank' | 'suit' | 'rank_or_suit' | 'rank_and_suit'
+    'rank' | 'suit' | 'rank_or_suit' | 'rank_and_suit' | 'no_limit'
 ;
 
 Cards:

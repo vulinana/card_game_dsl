@@ -1,0 +1,91 @@
+@startuml
+set namespaceSeparator .
+
+
+class grammar.CardGame  {
+  name : ID
+}
+
+
+class grammar.Rules  {
+  min_players : INT
+  max_players : INT
+  rounds : INT
+  table_cards_visible : BOOLEAN
+  next_player_in_round_condition : NextPlayerCondition
+  game_winner : GameWinner
+}
+
+
+class grammar.States  {
+}
+
+
+class grammar.State  {
+  name : ID
+}
+
+
+class grammar.Transition  {
+  condition : BOOLEAN
+}
+
+
+class grammar.Action  {
+  name : ID
+}
+
+
+class grammar.ParamList  {
+}
+
+
+class grammar.Param  {
+  value : OBJECT
+}
+
+
+class grammar.Cards  {
+}
+
+
+class grammar.CardCount  {
+  count : INT
+  score : INT
+}
+
+
+class grammar.Card  {
+  rank : Rank
+  suit : Suit
+}
+
+
+grammar.CardGame *--> grammar.Rules: rules
+grammar.CardGame *--> grammar.States: states
+grammar.CardGame *--> grammar.Cards: cards
+grammar.States *--> grammar.State: states 1..*
+grammar.State *--> grammar.Action: action
+grammar.State *--> grammar.Transition: transitions 1..*
+grammar.Transition o--> grammar.State: nextState
+grammar.Action *--> grammar.ParamList: params
+grammar.ParamList *--> grammar.Param: params 1..*
+
+
+class OBJECT <<abstract>> {
+}
+grammar.Cards *--> grammar.CardCount: cards 1..*
+grammar.CardCount *--> grammar.Card: card
+
+legend
+  Match rules:
+  |= Name  |= Rule details |
+  | BOOLEAN | true\|false |
+  | EnumValue | rank\|suit\|rank_or_suit\|rank_and_suit\|no_limit |
+  | Rank | 2\|3\|4\|5\|6\|7\|8\|9\|10\|12\|13\|14\|A |
+  | Suit | hearts\|diamonds\|clubs\|spades |
+  | NextPlayerCondition | circle_order\|last_played |
+  | GameWinner | highest_score\|lowest_score |
+end legend
+
+@enduml

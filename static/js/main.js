@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 selected_game = game;
                 title = document.getElementById('playground-game-title');
                 if (title != null)
-                    title.innerHTML = `Play ${selected_game.name}<br>Number of Players ${selected_game.min_number_of_players - 1}-${selected_game.max_number_of_players - 1}`
+                    title.innerHTML = `Play ${selected_game.name}<br>Number of Players ${selected_game.min_number_of_players}-${selected_game.max_number_of_players}`
                 const allButtons = document.querySelectorAll('.game-button');
                 allButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.toggle('active');

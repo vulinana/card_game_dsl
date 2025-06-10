@@ -114,17 +114,19 @@ def players_picked(selected_rivals, game_name):
 @socketio.on('accept_invitation')
 def accept_invitation(rival_email, game_id):
     player_email = get_connected_user_email(request.sid)
-    print("accept invitation")
     player_from_db = UserService.get_user(player_email)
     GameService.update_game_request_status(game_id, player_from_db.id, GameRequestStatus.ACCEPTED)
 
     game_from_db = GameService.get_game(game_id)
     game_initiator_sid = get_connected_user_sid(game_from_db.game_initiator.email)
     if (any(request.status == GameRequestStatus.PENDING for request in game_from_db.game_requests)):
-        emit('invitation_resolved', {'message': f"Player {player_email} accepted invitation. Waiting for others!"},
+        emit('invitation_resolved',
+             {'message': f"Player {player_email} accepted invitation. "
+                               f"Waiting for others!"},
              to=game_initiator_sid)
         emit('invitation_resolved', {
-            'message': f"Player {game_from_db.game_initiator.email} is happy you want to play. Waiting for others to accept!"},
+            'message': f"Player {game_from_db.game_initiator.email} is happy you want to play. "
+                       f"Waiting for others to accept!"},
              to=request.sid)
 
     else:
@@ -143,8 +145,9 @@ def decline_invitation(game_id):
 
     has_pending_requests = any(gr.status == GameRequestStatus.PENDING for gr in game_from_db.game_requests)
     accepted_game_requests = [gr for gr in game_from_db.game_requests if gr.status == GameRequestStatus.ACCEPTED]
+    game = next((game for game in load_games_shared() if game.name == game_from_db.name), None)
 
-    if not has_pending_requests and len(accepted_game_requests) + 1 < game_from_db.min_number_of_players:
+    if not has_pending_requests and len(accepted_game_requests) < game.rules.min_players:
         emit('notification', {
             'message': f"Player {player_email} declined invitation to play {game_from_db.name}. Not enough players :("},
              to=game_initiator_sid)
@@ -161,7 +164,6 @@ def decline_invitation(game_id):
 
 @socketio.on('play_game')
 def play_game(game_id, selected_player_cards = [], selected_table_cards = [], matching_cards = [], selected_user = None, new_round = False):
-    print("play game ", game_id)
     game_from_db = GameService.get_game(game_id)
     game = next((game for game in load_games_shared() if game.name == game_from_db.name), None)
 
@@ -174,6 +176,15 @@ def play_game(game_id, selected_player_cards = [], selected_table_cards = [], ma
     action = current_state.action
     condition = None
     match action.name:
+        case 'fill_player_hand_to':
+            StateService.fill_player_hand_to(game_id, action.params[0])
+            display_player_cards(game_id, game.rules.rounds)
+        case 'next_player':
+            next_player_email = StateService.next_player(game_id, new_round, game.rules.next_player_in_round_condition)
+            for player in GameService.get_game_players(game_id):
+                player_sid = get_connected_user_sid(player.user.email)
+                is_turn = next_player_email == player.user.email
+                emit('player_turn_status', {'is_turn': is_turn}, to=player_sid)
         case 'deal_table_cards':
             print("case deal table cards")
             StateService.deal_table_cards(action.params[0], game, game_id)
@@ -184,16 +195,6 @@ def play_game(game_id, selected_player_cards = [], selected_table_cards = [], ma
             StateService.deal_player_cards(action.params[0], game_id)
             display_table_cards(game_id, game.rules)
             display_player_cards(game_id, game.rules.rounds)
-        case 'fill_player_hand_to':
-            StateService.fill_player_hand_to(game_id, action.params[0])
-            display_player_cards(game_id, game.rules.rounds)
-        case 'next_player':
-            print("case next player")
-            next_player_email = StateService.next_player(game_id, new_round, game.rules.next_player_in_round_condition)
-            for player in GameService.get_game_players(game_id):
-                player_sid = get_connected_user_sid(player.user.email)
-                is_turn = next_player_email == player.user.email
-                emit('player_turn_status', {'is_turn': is_turn}, to=player_sid)
         case 'throw_cards':
             print("case throw cards")
             if len(selected_player_cards) == 0:
