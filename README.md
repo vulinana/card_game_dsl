@@ -2,7 +2,6 @@
 
 ### Author: Ana Vulin, E2 62/2023
 ### Supervisor: Prof. Igor Dejanović, PhD
-### Year: 2025
 
 ## Project theme
 
